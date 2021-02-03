@@ -116,13 +116,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="buddy.c" />
-    <ClCompile Include="cashe.c" />
+    <ClCompile Include="cache.c" />
     <ClCompile Include="slab.c" />
+    <ClCompile Include="slabH.c" />
     <ClCompile Include="Source.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buddy.h" />
-    <ClInclude Include="cashe.h" />
+    <ClInclude Include="cache.h" />
     <ClInclude Include="slab.h" />
     <ClInclude Include="slabH.h" />
   </ItemGroup>

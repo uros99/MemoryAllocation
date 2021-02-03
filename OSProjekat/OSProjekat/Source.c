@@ -2,18 +2,16 @@
 #include<math.h>
 #include<stdlib.h>
 
-#include"buddy.h"
-#include"cashe.h"
+#include"slab.h"
+#include"cache.h"
 int main() {
-	void* space = malloc(4096 * 1000);
-	buddyInit(space, 1000);
-	void* allocMem = buddyAlloc(150000);
-	void* allocMem1 = buddyAlloc(90000);
-	printBuddyMem();
-	printf("\n");
-	buddyFree(allocMem, 150000);
-	buddyFree(allocMem1, 90000);
-	printBuddyMem();
-	buddyDelete();
+	void *mem = malloc(BLOCK_SIZE * 1000);
+	kmem_init(mem, 1000);
+	kmem_cache_t* cache = kmem_cache_create("PCB", 16, NULL, NULL);
+	for(int i = 0; i<100;i++)
+		kmem_cache_alloc(cache);
+	printCache(cache);
+/*	kmem_cache_alloc(cache);
+	printCache(cache);*/
 	for (;;);
 }

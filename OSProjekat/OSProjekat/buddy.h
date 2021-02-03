@@ -1,5 +1,5 @@
 #pragma once
-#include"cashe.h"
+#include"cache.h"
 
 typedef struct Buddy {
 	int numOfBlocks;

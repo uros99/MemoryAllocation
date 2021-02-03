@@ -1,5 +1,5 @@
 #include"slab.h"
-#include"cashe.h"
+#include"cache.h"
 #include"buddy.h"
 
 void kmem_init(void * space, int block_num)
@@ -11,4 +11,10 @@ kmem_cache_t * kmem_cache_create(const char * name, size_t size, void(*ctor)(voi
 {
 	kmem_cache_t* cache = cache_create(name, size, ctor, dtor);
 	return cache;
+}
+
+void * kmem_cache_alloc(kmem_cache_t * cachep)
+{
+	void * addr = cache_alloc(cachep);
+	return addr;
 }
