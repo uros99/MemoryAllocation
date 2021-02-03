@@ -21,12 +21,24 @@
     <ClCompile Include="buddy.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cashe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="slab.c">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="slab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="buddy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cashe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="slabH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,8 +1,9 @@
 #pragma once
 #include <stdlib.h>
-typedef struct kmem_cache_s kmem_cache_t;
 #define BLOCK_SIZE (4096)
 #define CACHE_L1_LINE_SIZE (64)
+
+typedef struct kmem_cache_s kmem_cache_t;
 void kmem_init(void *space, int block_num);
 kmem_cache_t *kmem_cache_create(const char *name, size_t size,
 	void(*ctor)(void *),

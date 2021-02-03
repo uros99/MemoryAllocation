@@ -1,7 +1,9 @@
 #include<stdio.h>
-#include"buddy.h"
 #include<math.h>
 #include<stdlib.h>
+
+#include"buddy.h"
+#include"cashe.h"
 int main() {
 	void* space = malloc(4096 * 1000);
 	buddyInit(space, 1000);

@@ -1,2 +1,6 @@
-﻿  Source.c
+﻿  buddy.c
+  cashe.c
+  slab.c
+  Source.c
+  Generating Code...
   OSProjekat.vcxproj -> C:\Users\urosu\Desktop\OSProjekat\OSProjekat\Debug\OSProjekat.exe

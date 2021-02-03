@@ -40,6 +40,8 @@ void buddyInit(void* space, int blockNumber) {
 
 	*((int*)((buddy*)Buddy + 1) + Buddy->sizeOfFreeArr) = 0;
 	*((int*)block(0)) = -1;
+
+	Buddy->headCache = NULL;
 }
 
 void* buddyAlloc(size_t cashSize) {
@@ -92,7 +94,7 @@ void* buddyAlloc(size_t cashSize) {
 
 void buddyFree(void * addr, size_t size){
 	unsigned int blockNumber = blockToInd(addr);
-	unsigned int numberOfBlocks = ceil((double)size / BLOCK_SIZE);
+	unsigned int numberOfBlocks = (int)ceil((double)size / BLOCK_SIZE);
 	int tmp = (int)ceil(log2(numberOfBlocks));
 	numberOfBlocks = 1 << tmp;
 //	unsigned int numberOfBlocks = ceil((double)size / BLOCK_SIZE);
@@ -182,7 +184,7 @@ void deleteFromList(int blockNum, int numberOfBlocks) {
 
 int blockToInd(void * addr)
 {
-	return ceil(((char*)addr - (char*)Buddy->myMem) / BLOCK_SIZE);
+	return (int)ceil(((char*)addr - (char*)Buddy->myMem) / BLOCK_SIZE);
 }
 
 void buddyDelete() {

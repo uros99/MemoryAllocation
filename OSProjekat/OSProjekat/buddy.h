@@ -1,10 +1,12 @@
 #pragma once
+#include"cashe.h"
 
 typedef struct Buddy {
 	int numOfBlocks;
 	void* myMem;
 	int sizeOfFreeArr;
 	int sizeOfBuddy;
+	kmem_cache_t *headCache;
 } buddy;
 
 void buddyInit(void* space, int blockNumber);
