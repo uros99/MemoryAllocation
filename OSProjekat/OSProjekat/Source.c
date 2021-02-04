@@ -15,7 +15,9 @@ int main() {
 	for (int i = 0; i < 100; i++)
 		kmem_cache_free(cache, address[i]);
 	printCache(cache);
-/*	kmem_cache_alloc(cache);
-	printCache(cache);*/
+	int free = kmem_cache_shrink(cache);
+	printf("\n NUMBER OF BLOCKS FREE %d\n", free);
+	printCache(cache);
+	kmalloc(5);
 	for (;;);
 }

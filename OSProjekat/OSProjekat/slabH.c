@@ -74,7 +74,6 @@ void insertInList(int index, slab * slabTmp)
 		slabTmp->prevSlab = NULL;
 		pom->prevSlab = slabTmp;
 	}
-	return slabTmp->cache->slabs[index];
 }
 
 void removeFromList(int index, slab * slabTmp)
@@ -96,7 +95,6 @@ void removeFromList(int index, slab * slabTmp)
 		slabTmp->nextSlab = NULL;
 		slabTmp->prevSlab = NULL;
 	}
-	return slabTmp->cache->slabs[index];
 }
 
 void printSlab(slab *slabArg) {

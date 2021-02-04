@@ -39,7 +39,7 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 		cache->numberOfObjectsPerSlab = spaceForObjectsInSlab / size;
 		cache->numberOfBlocksForSlab = (int)ceil((double)spaceForObjectsInSlab / BLOCK_SIZE);
 		cache->numberOfSlabs = 0;
-
+		cache->shrink = true;
 		cache->slabs[EMPTYSLAB] = NULL;
 		cache->slabs[FULLSLAB] = NULL;
 		cache->slabs[NOTFULLSLAB] = NULL;
@@ -65,6 +65,7 @@ void* cache_alloc(kmem_cache_t * cache) {
 	unsigned int index = 2;
 	if (cache->slabs[NOTFULLSLAB] == NULL && cache->slabs[EMPTYSLAB] == NULL) {
 		allocSlab(cache);
+		cache->shrink = false;
 		index = NOTFULLSLAB;
 	}
 	else if (cache->slabs[EMPTYSLAB] != NULL)
@@ -108,6 +109,29 @@ bool inRange(void * begin, void * end, void * obj)
 		return true;
 	else
 		return false;
+}
+
+int cacheShrink(kmem_cache_t * cache)
+{
+	static bool callFirstTime = false;
+	slab* head = cache->slabs[EMPTYSLAB];
+	slab* old = NULL;
+	int numOfBlocks = 0;
+	if (!cache->shrink) {
+		cache->shrink = true;
+		if(callFirstTime)
+			return numOfBlocks;
+		callFirstTime = true;
+	}
+	while (head != NULL) {
+		cache->numberOfSlabs--;
+		numOfBlocks = numOfBlocks + (int)ceil((double)(((char*)head->endAddrOfSlab - (char*)head->mem) / BLOCK_SIZE));
+		old = head;
+		head = head->nextSlab;
+		buddyFree(old->mem, ((char*)old->endAddrOfSlab - (char*)old->mem));
+	}
+	cache->slabs[EMPTYSLAB] = NULL;
+	return numOfBlocks;
 }
 
 void printCache(kmem_cache_t* cache)

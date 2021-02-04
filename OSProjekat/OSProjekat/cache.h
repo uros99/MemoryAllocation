@@ -19,6 +19,7 @@ typedef struct kmem_cache_s {
 	unsigned int numberOfBlocksForSlab;
 	unsigned int numberOfSlabs;
 
+	bool shrink;
 	void* memory;
 
 	ctor constructor;
@@ -29,4 +30,5 @@ kmem_cache_t* cache_create(const char *name, size_t size, void(*ctor)(void *), v
 void* cache_alloc(kmem_cache_t *cache);
 void cache_free(kmem_cache_t *cache, void* addrOfObject);
 bool inRange(void *begin, void *end, void *obj);
+int cacheShrink(kmem_cache_t* cache);
 void printCache(kmem_cache_t* cache);
