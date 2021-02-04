@@ -9,11 +9,13 @@ typedef struct slab {
 	unsigned int numberOfBlocks;
 	unsigned int slotsInUse;
 	void *mem;
+	void *endAddrOfSlab;
 	void* freeSlots;
 } slab;
 
 slab* allocSlab(kmem_cache_t *cache);
 void* allocSlot(slab* slabArg);
+void deleteSlot(slab* slabArg, void *addrObj);
 void insertInList(int index, slab* slabTmp);
 void removeFromList(int index, slab* slabTmp);
 void printSlab(slab *slabArg);

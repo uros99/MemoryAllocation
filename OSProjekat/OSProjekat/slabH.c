@@ -13,6 +13,7 @@ slab * allocSlab(kmem_cache_t * cache)
 	slabTmp->mem = mem;
 	slabTmp->numberOfObjects = cache->numberOfObjectsPerSlab;
 	slabTmp->numberOfBlocks = cache->numberOfBlocksForSlab;
+	slabTmp->endAddrOfSlab = (char*)mem + sizeof(slab) + BLOCK_SIZE * (slabTmp->numberOfBlocks);
 	slabTmp->slotsInUse = 0;
 	slabTmp->nextSlab = NULL;
 	slabTmp->prevSlab = NULL;
@@ -20,7 +21,7 @@ slab * allocSlab(kmem_cache_t * cache)
 	slabTmp->freeSlots = (char*)mem + sizeof(slab);
 	void *pom = slabTmp->freeSlots;
 	int i = 1;
-	while ((char*)pom < (char*)mem + BLOCK_SIZE * (slabTmp->numberOfBlocks)) {
+	while ((char*)pom < (char*)mem + sizeof(slab) + BLOCK_SIZE * (slabTmp->numberOfBlocks)) {
 		if (i == slabTmp->numberOfObjects-1) {
 			*(int*)pom = -1;
 			pom = (char*)pom + slabTmp->cache->sizeOfObject;
@@ -46,6 +47,17 @@ void * allocSlot(slab* slabArg)
 	}
 	slabArg->slotsInUse++;
 	return addr;
+}
+
+void deleteSlot(slab * slabArg, void * addrObj)
+{
+	int head = ((char*)slabArg->freeSlots - ((char*)slabArg->mem + sizeof(slab))) / slabArg->cache->sizeOfObject;
+	slabArg->freeSlots = addrObj;
+	if(slabArg->slotsInUse == slabArg->numberOfObjects -2)
+		*(int*)slabArg->freeSlots = -1;
+	else
+		*(int*)slabArg->freeSlots = head;
+	slabArg->slotsInUse--;
 }
 
 void insertInList(int index, slab * slabTmp)
@@ -90,8 +102,9 @@ void removeFromList(int index, slab * slabTmp)
 void printSlab(slab *slabArg) {
 	printf("Number of available blocks: %d\n", slabArg->numberOfBlocks);
 	printf("Number of max objects in one slab: %d\n", slabArg->numberOfObjects);
-	for (unsigned int i = 0; i < slabArg->numberOfObjects;i++) {
-		void * addr = (char*)slabArg->freeSlots + (i * slabArg->cache->sizeOfObject);
+	void *addr = slabArg->freeSlots;
+	while (*(int*)addr!=-1) {
 		printf("%d\n", *(int*)addr);
+		addr = (char*)slabArg->mem + sizeof(slab) + (*(int*)addr * slabArg->cache->sizeOfObject);
 	}
 }

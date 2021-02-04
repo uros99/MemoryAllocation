@@ -74,9 +74,46 @@ void* cache_alloc(kmem_cache_t * cache) {
 	return addrOfObject;
 }
 
+void cache_free(kmem_cache_t * cache, void * addrOfObject)
+{
+	slab *head = cache->slabs[FULLSLAB];
+	while (head != NULL) {
+		if (inRange(head->mem, head->endAddrOfSlab, addrOfObject)) {
+			deleteSlot(head, addrOfObject);
+			removeFromList(FULLSLAB, head);
+			insertInList(NOTFULLSLAB, head);
+			break;
+		}
+		head = head->nextSlab;
+	}
+	if (head == NULL) {
+		slab *head = cache->slabs[NOTFULLSLAB];
+		while (head != NULL) {
+			if (inRange(head->mem, head->endAddrOfSlab, addrOfObject)) {
+				deleteSlot(head, addrOfObject);
+				if (head->slotsInUse == 0) {
+					removeFromList(NOTFULLSLAB, head);
+					insertInList(EMPTYSLAB, head);
+				}
+				break;
+			}
+			head = head->nextSlab;
+		}
+	}
+}
+
+bool inRange(void * begin, void * end, void * obj)
+{
+	if ((char*)obj > (char*)begin && (char*)obj < (char*)end)
+		return true;
+	else
+		return false;
+}
+
 void printCache(kmem_cache_t* cache)
 {
 	printf("Name of cache: %s\n", cache->nameOfCashe);
+	printf("Number of slabs %d\n", cache->numberOfSlabs);
 	printf("Empty slabs:\n");
 	slab *pom = cache->slabs[EMPTYSLAB];
 	while (pom != NULL) {

@@ -18,3 +18,8 @@ void * kmem_cache_alloc(kmem_cache_t * cachep)
 	void * addr = cache_alloc(cachep);
 	return addr;
 }
+
+void kmem_cache_free(kmem_cache_t * cachep, void * objp)
+{
+	cache_free(cachep, objp);
+}
