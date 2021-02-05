@@ -15,6 +15,7 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 			exists = true;
 			break;
 		}
+		pom = pom->nextCache;
 	}
 
 	if (exists) {
@@ -44,19 +45,6 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 		cache->slabs[FULLSLAB] = NULL;
 		cache->slabs[NOTFULLSLAB] = NULL;
 
-
-		if (Buddy->headCache == NULL) {
-			Buddy->headCache = cache;
-			cache->prevCache = NULL;
-			cache->nextCache = NULL;
-		}
-		else {
-			kmem_cache_t* tmp = Buddy->headCache;
-			Buddy->headCache = cache;
-			cache->nextCache = tmp;
-			tmp->prevCache = cache;
-			cache->prevCache = NULL;
-		}
 		return cache;
 	}
 }
@@ -68,7 +56,7 @@ void* cache_alloc(kmem_cache_t * cache) {
 		cache->shrink = false;
 		index = NOTFULLSLAB;
 	}
-	else if (cache->slabs[EMPTYSLAB] != NULL)
+	else if (cache->slabs[EMPTYSLAB] != NULL && cache->slabs[NOTFULLSLAB] == NULL)
 		index = EMPTYSLAB;
 
 	void *addrOfObject = allocSlot(cache->slabs[index]);

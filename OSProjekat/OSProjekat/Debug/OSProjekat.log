@@ -1,8 +1,3 @@
-﻿  buddy.c
-  cache.c
-c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\cache.c(139): warning C4013: 'printf' undefined; assuming extern returning int
-  slab.c
-  slabH.c
-  Source.c
-  Generating Code...
+﻿  cache.c
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\cache.c(127): warning C4013: 'printf' undefined; assuming extern returning int
   OSProjekat.vcxproj -> C:\Users\urosu\Desktop\OSProjekat\OSProjekat\Debug\OSProjekat.exe

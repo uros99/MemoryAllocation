@@ -1,5 +1,6 @@
 #pragma once
 #include"cache.h"
+#define NUMBER_OF_BUFFERS (13)
 
 typedef struct Buddy {
 	int numOfBlocks;
@@ -7,6 +8,7 @@ typedef struct Buddy {
 	int sizeOfFreeArr;
 	int sizeOfBuddy;
 	kmem_cache_t *headCache;
+	kmem_cache_t *cacheBuffers[NUMBER_OF_BUFFERS];
 } buddy;
 
 void buddyInit(void* space, int blockNumber);

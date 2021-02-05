@@ -34,6 +34,10 @@ void buddyInit(void* space, int blockNumber) {
 	memory &= ~maska;
 	Buddy->myMem = (void*)memory;
 
+	for (int i = 0; i < NUMBER_OF_BUFFERS;i++) {
+		Buddy->cacheBuffers[i] = NULL;
+	}
+
 	for (int index = 0; index <= Buddy->sizeOfFreeArr - 1;index++) {
 		*((int*)((buddy*)Buddy + 1) + index) = -1;
 	}

@@ -4,6 +4,7 @@
 
 #include"slab.h"
 #include"cache.h"
+
 int main() {
 	void *mem = malloc(BLOCK_SIZE * 1000);
 	kmem_init(mem, 1000);
@@ -18,6 +19,14 @@ int main() {
 	int free = kmem_cache_shrink(cache);
 	printf("\n NUMBER OF BLOCKS FREE %d\n", free);
 	printCache(cache);
-	kmalloc(5);
+	void * addr = kmalloc(15);
+	int* i = (int*)addr;
+	*i = 5;
+	kfree(i);
+	void* addr1 = kmalloc(15);
+	int* j = (int*)addr1;
+	*j = 7;
+	printf("%d\n", *i);
+
 	for (;;);
 }
