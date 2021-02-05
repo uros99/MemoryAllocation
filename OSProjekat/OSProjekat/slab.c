@@ -116,4 +116,5 @@ int kmem_cache_error(kmem_cache_t * cachep)
 		printf("The error is unknown\n");
 		break;
 	}
+	return cachep->codeOfError;
 }
