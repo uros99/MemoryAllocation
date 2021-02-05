@@ -41,6 +41,7 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 		cache->numberOfBlocksForSlab = (int)ceil((double)spaceForObjectsInSlab / BLOCK_SIZE);
 		cache->numberOfBlocksForCashe = numberOfBlocksForCashe;
 		cache->numberOfSlabs = 0;
+		cache->codeOfError = 0;
 		cache->shrink = true;
 		cache->slabs[EMPTYSLAB] = NULL;
 		cache->slabs[FULLSLAB] = NULL;
@@ -54,6 +55,9 @@ void* cache_alloc(kmem_cache_t * cache) {
 	unsigned int index = 2;
 	if (cache->slabs[NOTFULLSLAB] == NULL && cache->slabs[EMPTYSLAB] == NULL) {
 		allocSlab(cache);
+		if (cache->codeOfError != 0) {
+			return NULL;
+		}
 		cache->shrink = false;
 		index = NOTFULLSLAB;
 	}

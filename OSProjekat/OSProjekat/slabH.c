@@ -8,6 +8,10 @@ slab * allocSlab(kmem_cache_t * cache)
 {
 	size_t size = cache->numberOfBlocksForSlab * BLOCK_SIZE + sizeof(slab);
 	void *mem = buddyAlloc(size);
+	if (mem == NULL) {
+		cache->codeOfError = 1;
+		return NULL;
+	}
 	slab *slabTmp = (slab*)mem;
 	slabTmp->cache = cache;
 	slabTmp->mem = mem;

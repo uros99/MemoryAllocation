@@ -104,3 +104,16 @@ void kmem_cache_info(kmem_cache_t * cachep)
 	double prosentage = (double)numberOfSlotsInUse / (double)(cachep->numberOfSlabs * cachep->numberOfObjectsPerSlab);
 	printf("Prosentage of occupancy: %f\n", prosentage);
 }
+
+int kmem_cache_error(kmem_cache_t * cachep)
+{
+	switch (cachep->codeOfError)
+	{
+	case 0: printf("There is no error in system\n");break;
+	case 1: printf("Buddy doesn't have enough memory to allocate\n");break;
+	case 2: printf("Cache is not empty\n");break;
+	default:
+		printf("The error is unknown\n");
+		break;
+	}
+}

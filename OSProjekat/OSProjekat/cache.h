@@ -19,6 +19,8 @@ typedef struct kmem_cache_s {
 	unsigned int numberOfBlocksForSlab;
 	int numberOfSlabs;
 
+	int codeOfError;
+
 	bool shrink;
 	void* memory;
 
