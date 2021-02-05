@@ -1,11 +1,7 @@
-﻿  Source.c
-  buddy.c
-  cache.c
-c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\cache.c(132): warning C4013: 'printf' undefined; assuming extern returning int
+﻿  cache.c
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\cache.c(29): warning C4013: 'printf' undefined; assuming extern returning int
   slab.c
-c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(49): warning C4244: 'function': conversion from 'double' to 'size_t', possible loss of data
-c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(65): warning C4090: 'function': different 'const' qualifiers
-  slabH.c
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(52): warning C4244: 'function': conversion from 'double' to 'size_t', possible loss of data
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(70): warning C4090: 'function': different 'const' qualifiers
   Generating Code...
-c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(119): warning C4716: 'kmem_cache_error': must return a value
   OSProjekat.vcxproj -> C:\Users\urosu\Desktop\OSProjekat\OSProjekat\Debug\OSProjekat.exe

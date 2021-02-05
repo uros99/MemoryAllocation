@@ -101,9 +101,7 @@ void buddyFree(void * addr, size_t size){
 	unsigned int numberOfBlocks = (int)ceil((double)size / BLOCK_SIZE);
 	int tmp = (int)ceil(log2(numberOfBlocks));
 	numberOfBlocks = 1 << tmp;
-//	unsigned int numberOfBlocks = ceil((double)size / BLOCK_SIZE);
 	
-
 	int firstElement = *((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks)));
 	if (*((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks))) == -1) {
 		*((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks))) = blockNumber;
@@ -237,9 +235,10 @@ void buddyDelete() {
 			*(int*)(block(i)) = -1;
 		}
 
-		//obrisati cash
-		//obrisati bafere
-
+		Buddy->headCache = NULL;
+		for (int i = 0; i < NUMBER_OF_BUFFERS;i++) {
+			Buddy->cacheBuffers[i] = NULL;
+		}
 		Buddy->myMem = NULL;
 		Buddy = NULL;
 	}

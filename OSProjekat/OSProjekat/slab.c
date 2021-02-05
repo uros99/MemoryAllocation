@@ -17,7 +17,8 @@ void kmem_init(void * space, int block_num)
 kmem_cache_t * kmem_cache_create(const char * name, size_t size, void(*ctor)(void *), void(*dtor)(void *))
 {
 	kmem_cache_t* cache = cache_create(name, size, ctor, dtor);
-	addCacheToList(cache);
+	if (cache != NULL)
+		addCacheToList(cache);
 	return cache;
 }
 
@@ -40,13 +41,17 @@ void kmem_cache_free(kmem_cache_t * cachep, void * objp)
 
 void * kmalloc(size_t size)
 {
-	if (size < 5 || size > 17)
+	if (size < 5 || size > 17) {
+		printf("Cache with that object size is not exists\n");
 		return NULL;
+	}
 	char name[8];
 	sprintf_s(name, sizeof(name), "size-%d", size);
 	kmem_cache_t *cache = NULL;
 	if (Buddy->cacheBuffers[size - 5] == NULL) {
 		cache = cache_create(name, pow(2, size), NULL, NULL);
+		if (cache == NULL)
+			return NULL;
 		Buddy->cacheBuffers[size - 5] = cache;
 	}
 	else
@@ -73,6 +78,7 @@ void kmem_cache_destroy(kmem_cache_t * cachep)
 
 	cacheShrink(cachep);
 	if (cachep->slabs[NOTFULLSLAB] != NULL || cachep->slabs[FULLSLAB] != NULL) {
+		cachep->codeOfError = 2;
 		return;
 	}
 

@@ -25,6 +25,10 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 		size_t numberOfBlocksForCashe = (size_t)ceil(sizeof(kmem_cache_t) / BLOCK_SIZE);
 		size_t spaceForObjectsInSlab = BLOCK_SIZE - sizeof(slab);
 		void * addr = buddyAlloc(sizeof(numberOfBlocksForCashe * BLOCK_SIZE));
+		if (addr == NULL) {
+			printf("There isn't enough memory for cache");
+			return NULL;
+		}
 		kmem_cache_t *cache = (kmem_cache_t*)addr;
 		
 		size = size < sizeof(int) ? size = sizeof(int) : size;
@@ -54,8 +58,8 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 void* cache_alloc(kmem_cache_t * cache) {
 	unsigned int index = 2;
 	if (cache->slabs[NOTFULLSLAB] == NULL && cache->slabs[EMPTYSLAB] == NULL) {
-		allocSlab(cache);
-		if (cache->codeOfError != 0) {
+		slab* s = allocSlab(cache);
+		if (s == NULL) {
 			return NULL;
 		}
 		cache->shrink = false;
@@ -76,7 +80,7 @@ void cache_free(kmem_cache_t * cache, void * addrOfObject)
 			deleteSlot(head, addrOfObject);
 			removeFromList(FULLSLAB, head);
 			insertInList(NOTFULLSLAB, head);
-			break;
+			return;
 		}
 		head = head->nextSlab;
 	}
@@ -89,7 +93,7 @@ void cache_free(kmem_cache_t * cache, void * addrOfObject)
 					removeFromList(NOTFULLSLAB, head);
 					insertInList(EMPTYSLAB, head);
 				}
-				break;
+				return;
 			}
 			head = head->nextSlab;
 		}
