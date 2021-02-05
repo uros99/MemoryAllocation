@@ -13,12 +13,14 @@ int main() {
 	for(int i = 0; i < 100; i++)
 		address[i] = kmem_cache_alloc(cache);
 	printCache(cache);
+	kmem_cache_info(cache);
 	for (int i = 0; i < 100; i++)
 		kmem_cache_free(cache, address[i]);
 	printCache(cache);
 	int free = kmem_cache_shrink(cache);
 	printf("\n NUMBER OF BLOCKS FREE %d\n", free);
 	printCache(cache);
+	
 	void * addr = kmalloc(15);
 	int* i = (int*)addr;
 	*i = 5;
@@ -27,6 +29,6 @@ int main() {
 	int* j = (int*)addr1;
 	*j = 7;
 	printf("%d\n", *i);
-
+	kmem_cache_destroy(cache);
 	for (;;);
 }

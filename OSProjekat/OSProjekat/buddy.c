@@ -169,6 +169,43 @@ void insertToList(int blockNum, int numberOfBlocks) {
 	}
 }
 
+void addCacheToList(kmem_cache_t * cache)
+{
+	if (Buddy->headCache == NULL) {
+		Buddy->headCache = cache;
+		cache->prevCache = NULL;
+		cache->nextCache = NULL;
+	}
+	else {
+		kmem_cache_t* tmp = Buddy->headCache;
+		Buddy->headCache = cache;
+		cache->nextCache = tmp;
+		tmp->prevCache = cache;
+		cache->prevCache = NULL;
+	}
+}
+
+void deleteCacheFromList(kmem_cache_t * cache)
+{
+	if (Buddy->headCache == cache) {
+		Buddy->headCache = cache->nextCache;
+		if (cache->nextCache != NULL) {
+			cache->nextCache->prevCache = NULL;
+		}
+		cache->nextCache = NULL;
+		cache->prevCache = NULL;
+	}
+	else {
+		kmem_cache_t *prev = cache->prevCache;
+		kmem_cache_t *next = cache->nextCache;
+		prev->nextCache = next;
+		if (next != NULL)
+			next->prevCache = prev;
+		cache->nextCache = NULL;
+		cache->prevCache = NULL;
+	}
+}
+
 void deleteFromList(int blockNum, int numberOfBlocks) {
 	int head = *((int*)((buddy*)Buddy + 1) + (int)log2(numberOfBlocks));
 	int prev = -1;

@@ -1,3 +1,2 @@
-﻿  cache.c
-c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\cache.c(127): warning C4013: 'printf' undefined; assuming extern returning int
+﻿  Source.c
   OSProjekat.vcxproj -> C:\Users\urosu\Desktop\OSProjekat\OSProjekat\Debug\OSProjekat.exe

@@ -17,6 +17,8 @@ void buddyFree(void* addr, size_t size);
 int blockToInd(void* addr);
 void deleteFromList(int blockNum, int numberOfBlocks);
 void insertToList(int blockNum, int numberOfBlocks);
+void addCacheToList(kmem_cache_t *cache);
+void deleteCacheFromList(kmem_cache_t *cache);
 void buddyDelete();
 void printBuddyMem();
 void* block(int index);

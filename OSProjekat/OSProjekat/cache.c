@@ -39,6 +39,7 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 		cache->sizeOfObject = size;
 		cache->numberOfObjectsPerSlab = spaceForObjectsInSlab / size;
 		cache->numberOfBlocksForSlab = (int)ceil((double)spaceForObjectsInSlab / BLOCK_SIZE);
+		cache->numberOfBlocksForCashe = numberOfBlocksForCashe;
 		cache->numberOfSlabs = 0;
 		cache->shrink = true;
 		cache->slabs[EMPTYSLAB] = NULL;

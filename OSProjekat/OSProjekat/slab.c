@@ -1,6 +1,8 @@
 #include"slab.h"
 #include"cache.h"
 #include"buddy.h"
+#include"slabH.h"
+
 #include<string.h>
 #include<math.h>
 #include<stdio.h>
@@ -15,18 +17,7 @@ void kmem_init(void * space, int block_num)
 kmem_cache_t * kmem_cache_create(const char * name, size_t size, void(*ctor)(void *), void(*dtor)(void *))
 {
 	kmem_cache_t* cache = cache_create(name, size, ctor, dtor);
-	if (Buddy->headCache == NULL) {
-		Buddy->headCache = cache;
-		cache->prevCache = NULL;
-		cache->nextCache = NULL;
-	}
-	else {
-		kmem_cache_t* tmp = Buddy->headCache;
-		Buddy->headCache = cache;
-		cache->nextCache = tmp;
-		tmp->prevCache = cache;
-		cache->prevCache = NULL;
-	}
+	addCacheToList(cache);
 	return cache;
 }
 
@@ -74,4 +65,42 @@ void kfree(const void * objp)
 			cache_free(Buddy->cacheBuffers[i], objp);
 		}
 	}
+}
+
+void kmem_cache_destroy(kmem_cache_t * cachep)
+{
+	if (cachep == NULL) return;
+
+	cacheShrink(cachep);
+	if (cachep->slabs[NOTFULLSLAB] != NULL || cachep->slabs[FULLSLAB] != NULL) {
+		return;
+	}
+
+	deleteCacheFromList(cachep);
+
+	buddyFree(cachep, cachep->numberOfBlocksForCashe * BLOCK_SIZE);
+}
+
+void kmem_cache_info(kmem_cache_t * cachep)
+{
+	printf("Name of cache: %s\n", cachep->nameOfCashe);
+	printf("Size of one object in cache: %u\n", cachep->sizeOfObject);
+	printf("Size of slabs in blocks: %u\n", cachep->numberOfBlocksForSlab);
+	printf("Number of slabs in cache: %d\n", cachep->numberOfSlabs);
+	printf("Number of object in one slab: %u\n", cachep->numberOfObjectsPerSlab);
+
+	int numberOfSlotsInUse = 0;
+	slab *head = cachep->slabs[NOTFULLSLAB];
+	while (head != NULL) {
+		numberOfSlotsInUse += head->slotsInUse;
+		head = head->nextSlab;
+	}
+	head = cachep->slabs[FULLSLAB];
+	while (head!=NULL)
+	{
+		numberOfSlotsInUse += head->slotsInUse;
+		head = head->nextSlab;
+	}
+	double prosentage = (double)numberOfSlotsInUse / (double)(cachep->numberOfSlabs * cachep->numberOfObjectsPerSlab);
+	printf("Prosentage of occupancy: %f\n", prosentage);
 }
