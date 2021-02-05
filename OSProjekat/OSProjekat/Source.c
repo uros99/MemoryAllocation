@@ -21,11 +21,11 @@ int main() {
 	printf("\n NUMBER OF BLOCKS FREE %d\n", free);
 	printCache(cache);
 	
-	void * addr = kmalloc(15);
+	void * addr = kmalloc(32);
 	int* i = (int*)addr;
 	*i = 5;
 	kfree(i);
-	void* addr1 = kmalloc(15);
+	void* addr1 = kmalloc(32);
 	int* j = (int*)addr1;
 	*j = 7;
 	printf("%d\n", *i);

@@ -1,6 +1,7 @@
 #pragma once
 #include<stdlib.h>
 #include<stdbool.h>
+#include<Windows.h>
 #define EMPTYSLAB (0)
 #define FULLSLAB (1)
 #define NOTFULLSLAB (2)
@@ -20,7 +21,7 @@ typedef struct kmem_cache_s {
 	int numberOfSlabs;
 
 	int codeOfError;
-
+	HANDLE lock;
 	bool shrink;
 	void* memory;
 

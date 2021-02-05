@@ -1,5 +1,7 @@
 #pragma once
 #include"cache.h"
+#include<Windows.h>
+
 #define NUMBER_OF_BUFFERS (13)
 
 typedef struct Buddy {
@@ -9,6 +11,9 @@ typedef struct Buddy {
 	int sizeOfBuddy;
 	kmem_cache_t *headCache;
 	kmem_cache_t *cacheBuffers[NUMBER_OF_BUFFERS];
+
+	HANDLE mutex;
+	HANDLE global;
 } buddy;
 
 void buddyInit(void* space, int blockNumber);

@@ -28,6 +28,10 @@ void buddyInit(void* space, int blockNumber) {
 	int sizeOfFreeArr = (int)ceil(log2(blockNumber - numberOfBlocksForBuddy));
 	Buddy->sizeOfFreeArr = sizeOfFreeArr;
 
+	Buddy->global = CreateMutex(NULL, false, NULL);
+	Buddy->mutex = CreateMutex(NULL, false, NULL);
+
+
 	size_t memory = (size_t)((char*)space + numberOfBlocksForBuddy * BLOCK_SIZE);
 	memory += BLOCK_SIZE - 1;
 	unsigned int maska = BLOCK_SIZE - 1;
@@ -62,6 +66,7 @@ void* buddyAlloc(size_t cashSize) {
 	if (powerTwo > Buddy->numOfBlocks) {
 		return NULL;
 	}
+	WaitForSingleObject(Buddy->mutex, INFINITE);
 	int headIndex = *((int*)((buddy*)Buddy + 1) + (int)log2(powerTwo));
 	if (headIndex != -1) {
 		void * adrrOfHead = block(headIndex);
@@ -89,9 +94,11 @@ void* buddyAlloc(size_t cashSize) {
 				}
 				void* retAdrr = block(*((int*)((buddy*)Buddy + 1) + index));
 				*((int*)((buddy*)Buddy + 1) + index) = *((int*)block(firstElem));
+				ReleaseMutex(Buddy->mutex);
 				return retAdrr;
 			}
 		}
+		ReleaseMutex(Buddy->mutex);
 		return NULL;
 	}
 }
@@ -103,6 +110,7 @@ void buddyFree(void * addr, size_t size){
 	numberOfBlocks = 1 << tmp;
 	
 	int firstElement = *((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks)));
+	WaitForSingleObject(Buddy->mutex, INFINITE);
 	if (*((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks))) == -1) {
 		*((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks))) = blockNumber;
 		*((int*)block(blockNumber)) = -1;
@@ -147,6 +155,7 @@ void buddyFree(void * addr, size_t size){
 			}
 		}
 	}
+	ReleaseMutex(Buddy->mutex);
 }
 
 void insertToList(int blockNum, int numberOfBlocks) {
@@ -241,6 +250,8 @@ void buddyDelete() {
 		}
 		Buddy->myMem = NULL;
 		Buddy = NULL;
+		CloseHandle(Buddy->mutex);
+		CloseHandle(Buddy->global);
 	}
 }
 
