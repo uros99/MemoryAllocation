@@ -14,6 +14,11 @@ typedef struct Buddy {
 
 	HANDLE mutex;
 	HANDLE global;
+	HANDLE slabMutex;
+	HANDLE printMutex;
+	HANDLE freeMutex;
+	HANDLE allocMutex;
+	HANDLE listMutex;
 } buddy;
 
 void buddyInit(void* space, int blockNumber);

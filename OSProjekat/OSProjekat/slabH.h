@@ -1,5 +1,6 @@
 #pragma once
 #include"cache.h"
+#include<Windows.h>
 
 typedef struct slab {
 	struct slab *nextSlab;
@@ -8,6 +9,9 @@ typedef struct slab {
 	unsigned int numberOfObjects;
 	unsigned int numberOfBlocks;
 	unsigned int slotsInUse;
+	int sizeOfSlabInByte;
+	HANDLE slabHandle;
+
 	void *mem;
 	void *endAddrOfSlab;
 	void* freeSlots;
@@ -19,3 +23,4 @@ void deleteSlot(slab* slabArg, void *addrObj);
 void insertInList(int index, slab* slabTmp);
 void removeFromList(int index, slab* slabTmp);
 void printSlab(slab *slabArg);
+void clearSlab(slab* slabTmp);

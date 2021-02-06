@@ -4,6 +4,9 @@
 #include"cache.h"
 #include<stdio.h>
 
+
+extern buddy* Buddy;
+
 slab * allocSlab(kmem_cache_t * cache)
 {
 	size_t size = cache->numberOfBlocksForSlab * BLOCK_SIZE + sizeof(slab);
@@ -18,10 +21,11 @@ slab * allocSlab(kmem_cache_t * cache)
 	slabTmp->numberOfObjects = cache->numberOfObjectsPerSlab;
 	slabTmp->numberOfBlocks = cache->numberOfBlocksForSlab;
 	slabTmp->endAddrOfSlab = (char*)mem + sizeof(slab) + BLOCK_SIZE * (slabTmp->numberOfBlocks);
+	slabTmp->sizeOfSlabInByte = (int)((char*)slabTmp->endAddrOfSlab - (char*)slabTmp->mem);
 	slabTmp->slotsInUse = 0;
 	slabTmp->nextSlab = NULL;
 	slabTmp->prevSlab = NULL;
-
+	slabTmp->slabHandle = CreateMutex(NULL, false, NULL);
 	slabTmp->freeSlots = (char*)mem + sizeof(slab);
 	void *pom = slabTmp->freeSlots;
 	int i = 1;
@@ -40,16 +44,37 @@ slab * allocSlab(kmem_cache_t * cache)
 	return slabTmp;
 }
 
+void clearSlab(slab* slabTmp) {
+	slabTmp->freeSlots = (char*)slabTmp->mem + sizeof(slab);
+	slabTmp->slotsInUse = 0;
+	void *pom = slabTmp->freeSlots;
+	int i = 1;
+	while ((char*)pom < (char*)slabTmp->mem + sizeof(slab) + BLOCK_SIZE * (slabTmp->numberOfBlocks)) {
+		if (i == slabTmp->numberOfObjects - 1) {
+			*(int*)pom = -1;
+			pom = (char*)pom + slabTmp->cache->sizeOfObject;
+			break;
+		}
+		*(int*)pom = i;
+		pom = (char*)pom + slabTmp->cache->sizeOfObject;
+		i++;
+	}
+}
+
 void * allocSlot(slab* slabArg)
 {
-	int head = *(int*)((char*)slabArg->freeSlots);
+	int head = *(int*)slabArg->freeSlots;
 	void *addr = slabArg->freeSlots;
-	slabArg->freeSlots = (char*)slabArg->mem + sizeof(slab) + head * slabArg->cache->sizeOfObject;
-	if (*(int*)slabArg->freeSlots == -1) {
+	if (head == -1) {
+		slabArg->freeSlots = (char*)slabArg->mem + sizeof(slab);
+	}
+	else
+		slabArg->freeSlots = (char*)slabArg->mem + sizeof(slab) + head * slabArg->cache->sizeOfObject;
+	slabArg->slotsInUse++;
+	if (slabArg->slotsInUse == slabArg->numberOfObjects) {
 		removeFromList(NOTFULLSLAB, slabArg);
 		insertInList(FULLSLAB, slabArg);
 	}
-	slabArg->slotsInUse++;
 	return addr;
 }
 
@@ -66,6 +91,7 @@ void deleteSlot(slab * slabArg, void * addrObj)
 
 void insertInList(int index, slab * slabTmp)
 {
+	WaitForSingleObject(slabTmp->slabHandle,INFINITE);
 	if (slabTmp->cache->slabs[index] == NULL) {
 		slabTmp->cache->slabs[index] = slabTmp;
 		slabTmp->prevSlab = NULL;
@@ -78,10 +104,13 @@ void insertInList(int index, slab * slabTmp)
 		slabTmp->prevSlab = NULL;
 		pom->prevSlab = slabTmp;
 	}
+	ReleaseMutex(slabTmp->slabHandle);
 }
 
 void removeFromList(int index, slab * slabTmp)
 {
+	WaitForSingleObject(slabTmp->slabHandle, INFINITE);
+	if (slabTmp->cache->slabs[index] == NULL)return;
 	if (slabTmp->cache->slabs[index] == slabTmp) {
 		slabTmp->cache->slabs[index] = slabTmp->nextSlab;
 		if (slabTmp->nextSlab != NULL) {
@@ -99,6 +128,7 @@ void removeFromList(int index, slab * slabTmp)
 		slabTmp->nextSlab = NULL;
 		slabTmp->prevSlab = NULL;
 	}
+	ReleaseMutex(slabTmp->slabHandle);
 }
 
 void printSlab(slab *slabArg) {

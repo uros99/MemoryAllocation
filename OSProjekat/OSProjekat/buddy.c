@@ -30,7 +30,11 @@ void buddyInit(void* space, int blockNumber) {
 
 	Buddy->global = CreateMutex(NULL, false, NULL);
 	Buddy->mutex = CreateMutex(NULL, false, NULL);
-
+	Buddy->slabMutex = CreateMutex(NULL, false, NULL);
+	Buddy->printMutex = CreateMutex(NULL, false, NULL);
+	Buddy->freeMutex = CreateMutex(NULL, false, NULL);
+	Buddy->allocMutex = CreateMutex(NULL, false, NULL);
+	Buddy->listMutex = CreateMutex(NULL, false, NULL);
 
 	size_t memory = (size_t)((char*)space + numberOfBlocksForBuddy * BLOCK_SIZE);
 	memory += BLOCK_SIZE - 1;
@@ -159,6 +163,7 @@ void buddyFree(void * addr, size_t size){
 }
 
 void insertToList(int blockNum, int numberOfBlocks) {
+	WaitForSingleObject(Buddy->mutex, INFINITE);
 	int head = *((int*)((buddy*)Buddy + 1) + (int)log2(numberOfBlocks));
 	int prev = -1;
 	
@@ -174,10 +179,12 @@ void insertToList(int blockNum, int numberOfBlocks) {
 		*((int*)block(blockNum)) = head;
 		*(int*)block(prev) = blockNum;
 	}
+	ReleaseMutex(Buddy->mutex);
 }
 
 void addCacheToList(kmem_cache_t * cache)
 {
+	WaitForSingleObject(Buddy->listMutex, INFINITE);
 	if (Buddy->headCache == NULL) {
 		Buddy->headCache = cache;
 		cache->prevCache = NULL;
@@ -190,10 +197,13 @@ void addCacheToList(kmem_cache_t * cache)
 		tmp->prevCache = cache;
 		cache->prevCache = NULL;
 	}
+	ReleaseMutex(Buddy->listMutex);
 }
 
 void deleteCacheFromList(kmem_cache_t * cache)
 {
+	WaitForSingleObject(Buddy->listMutex, INFINITE);
+	if (Buddy->headCache == NULL) return;
 	if (Buddy->headCache == cache) {
 		Buddy->headCache = cache->nextCache;
 		if (cache->nextCache != NULL) {
@@ -211,9 +221,11 @@ void deleteCacheFromList(kmem_cache_t * cache)
 		cache->nextCache = NULL;
 		cache->prevCache = NULL;
 	}
+	ReleaseMutex(Buddy->listMutex);
 }
 
 void deleteFromList(int blockNum, int numberOfBlocks) {
+	WaitForSingleObject(Buddy->mutex, INFINITE);
 	int head = *((int*)((buddy*)Buddy + 1) + (int)log2(numberOfBlocks));
 	int prev = -1;
 	while (head != blockNum) {
@@ -228,6 +240,7 @@ void deleteFromList(int blockNum, int numberOfBlocks) {
 		*(int*)block(prev) = *(int*)block(head);
 		*((int*)block(head)) = -1;
 	}
+	ReleaseMutex(Buddy->mutex);
 }
 
 int blockToInd(void * addr)
