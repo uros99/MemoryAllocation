@@ -7,14 +7,12 @@
 extern buddy* Buddy;
 
 kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), void(*dtor)(void *)) {
-	WaitForSingleObject(Buddy->global, INFINITE);
 
 	size_t numberOfBlocksForCashe = (size_t)ceil((double)sizeof(kmem_cache_t) / BLOCK_SIZE);
 	size_t spaceForObjectsInSlab = BLOCK_SIZE - sizeof(slab);
 	void * addr = buddyAlloc(sizeof(numberOfBlocksForCashe * BLOCK_SIZE));
 	if (addr == NULL) {
 		printf("There isn't enough memory for cache");
-		ReleaseMutex(Buddy->global);
 		return NULL;
 	}
 	kmem_cache_t *cache = (kmem_cache_t*)addr;
@@ -39,20 +37,16 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 	cache->slabs[EMPTYSLAB] = NULL;
 	cache->slabs[FULLSLAB] = NULL;
 	cache->slabs[NOTFULLSLAB] = NULL;
-	ReleaseMutex(Buddy->global);
 	return cache;
 }
 
 void* cache_alloc(kmem_cache_t * cache) {
-	WaitForSingleObject(Buddy->allocMutex, INFINITE);
-	WaitForSingleObject(cache->lock, INFINITE);
+	
 	unsigned int index = 2;
 	slab *s = NULL;
 	if (cache->slabs[NOTFULLSLAB] == NULL && cache->slabs[EMPTYSLAB] == NULL) {
 		s = allocSlab(cache);
 		if (s == NULL) {
-			ReleaseMutex(cache->lock);
-			ReleaseMutex(Buddy->allocMutex);
 			return NULL;
 		}
 		cache->shrink = false;
@@ -67,23 +61,17 @@ void* cache_alloc(kmem_cache_t * cache) {
 		removeFromList(EMPTYSLAB, cache->slabs[index]);
 		insertInList(NOTFULLSLAB, s);
 	}
-	ReleaseMutex(cache->lock);
-	ReleaseMutex(Buddy->allocMutex);
 	return addrOfObject;
 }
 
 void cache_free(kmem_cache_t * cache, void * addrOfObject)
 {
-	WaitForSingleObject(Buddy->freeMutex, INFINITE);
-	WaitForSingleObject(cache->lock, INFINITE);
 	slab *head = cache->slabs[FULLSLAB];
 	while (head != NULL) {
 		if (inRange(head->mem, head->endAddrOfSlab, addrOfObject)) {
 			deleteSlot(head, addrOfObject);
 			removeFromList(FULLSLAB, head);
 			insertInList(NOTFULLSLAB, head);
-			ReleaseMutex(cache->lock);
-			ReleaseMutex(Buddy->freeMutex);
 			return;
 		}
 		head = head->nextSlab;
@@ -98,8 +86,6 @@ void cache_free(kmem_cache_t * cache, void * addrOfObject)
 					removeFromList(NOTFULLSLAB, head);
 					insertInList(EMPTYSLAB, head);
 				}
-				ReleaseMutex(cache->lock);
-				ReleaseMutex(Buddy->freeMutex);
 				return;
 			}
 			head = head->nextSlab;
@@ -112,8 +98,6 @@ void cache_free(kmem_cache_t * cache, void * addrOfObject)
 			head = head->nextSlab;
 		}
 	}
-	ReleaseMutex(cache->lock);
-	ReleaseMutex(Buddy->freeMutex);
 }
 
 bool inRange(void * begin, void * end, void * obj)
@@ -126,7 +110,6 @@ bool inRange(void * begin, void * end, void * obj)
 
 int cacheShrink(kmem_cache_t * cache)
 {
-	WaitForSingleObject(cache->lock, INFINITE);
 	static bool callFirstTime = false;
 	slab* head = cache->slabs[EMPTYSLAB];
 	slab* old = NULL;
@@ -134,7 +117,6 @@ int cacheShrink(kmem_cache_t * cache)
 	if (!cache->shrink) {
 		cache->shrink = true;
 		if (callFirstTime) {
-			ReleaseMutex(cache->lock);
 			return numOfBlocks;
 		}
 		callFirstTime = true;
@@ -147,7 +129,6 @@ int cacheShrink(kmem_cache_t * cache)
 		buddyFree(old->mem, old->sizeOfSlabInByte);
 	}
 	cache->slabs[EMPTYSLAB] = NULL;
-	ReleaseMutex(cache->lock);
 	return numOfBlocks;
 }
 

@@ -27,15 +27,12 @@ void buddyInit(void* space, int blockNumber) {
 	Buddy->numOfBlocks = numOfBlocks;
 	int sizeOfFreeArr = (int)ceil(log2(blockNumber - numberOfBlocksForBuddy));
 	Buddy->sizeOfFreeArr = sizeOfFreeArr;
-
-	Buddy->global = CreateMutex(NULL, false, NULL);
-	Buddy->mutex = CreateMutex(NULL, false, NULL);
-	Buddy->slabMutex = CreateMutex(NULL, false, NULL);
-	Buddy->printMutex = CreateMutex(NULL, false, NULL);
-	Buddy->freeMutex = CreateMutex(NULL, false, NULL);
-	Buddy->allocMutex = CreateMutex(NULL, false, NULL);
 	Buddy->listMutex = CreateMutex(NULL, false, NULL);
-
+	Buddy->global = CreateMutex(NULL, false, NULL);
+	Buddy->buddyAllocMutex = CreateMutex(NULL, false, NULL);
+	Buddy->buddyFreeMutex = CreateMutex(NULL, false, NULL);
+	Buddy->printMutex = CreateMutex(NULL, false, NULL);
+	Buddy->workHandle = CreateMutex(NULL, false, NULL);
 	size_t memory = (size_t)((char*)space + numberOfBlocksForBuddy * BLOCK_SIZE);
 	memory += BLOCK_SIZE - 1;
 	unsigned int maska = BLOCK_SIZE - 1;
@@ -57,6 +54,7 @@ void buddyInit(void* space, int blockNumber) {
 }
 
 void* buddyAlloc(size_t cashSize) {
+	WaitForSingleObject(Buddy->buddyAllocMutex, INFINITE);
 	int blkNum = 0;
 	if (!cashSize%BLOCK_SIZE) {
 		blkNum = cashSize / BLOCK_SIZE;
@@ -68,14 +66,15 @@ void* buddyAlloc(size_t cashSize) {
 	int tmp = (int)ceil(log2(blkNum));
 	int powerTwo = 1 << tmp;
 	if (powerTwo > Buddy->numOfBlocks) {
+		ReleaseMutex(Buddy->buddyAllocMutex);
 		return NULL;
 	}
-	WaitForSingleObject(Buddy->mutex, INFINITE);
 	int headIndex = *((int*)((buddy*)Buddy + 1) + (int)log2(powerTwo));
 	if (headIndex != -1) {
 		void * adrrOfHead = block(headIndex);
 		int newHead = *((int*)block(headIndex));
 		*((int*)((buddy*)Buddy + 1) + (int)log2(powerTwo)) = newHead;
+		ReleaseMutex(Buddy->buddyAllocMutex);
 		return adrrOfHead;
 	}
 	else {
@@ -98,23 +97,23 @@ void* buddyAlloc(size_t cashSize) {
 				}
 				void* retAdrr = block(*((int*)((buddy*)Buddy + 1) + index));
 				*((int*)((buddy*)Buddy + 1) + index) = *((int*)block(firstElem));
-				ReleaseMutex(Buddy->mutex);
+				ReleaseMutex(Buddy->buddyAllocMutex);
 				return retAdrr;
 			}
 		}
-		ReleaseMutex(Buddy->mutex);
+		ReleaseMutex(Buddy->buddyAllocMutex);
 		return NULL;
 	}
 }
 
 void buddyFree(void * addr, size_t size){
+	WaitForSingleObject(Buddy->buddyFreeMutex, INFINITE);
 	unsigned int blockNumber = blockToInd(addr);
 	unsigned int numberOfBlocks = (int)ceil((double)size / BLOCK_SIZE);
 	int tmp = (int)ceil(log2(numberOfBlocks));
 	numberOfBlocks = 1 << tmp;
 	
 	int firstElement = *((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks)));
-	WaitForSingleObject(Buddy->mutex, INFINITE);
 	if (*((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks))) == -1) {
 		*((int*)((buddy*)Buddy + 1) + (int)(log2(numberOfBlocks))) = blockNumber;
 		*((int*)block(blockNumber)) = -1;
@@ -159,11 +158,10 @@ void buddyFree(void * addr, size_t size){
 			}
 		}
 	}
-	ReleaseMutex(Buddy->mutex);
+	ReleaseMutex(Buddy->buddyFreeMutex);
 }
 
 void insertToList(int blockNum, int numberOfBlocks) {
-	WaitForSingleObject(Buddy->mutex, INFINITE);
 	int head = *((int*)((buddy*)Buddy + 1) + (int)log2(numberOfBlocks));
 	int prev = -1;
 	
@@ -179,7 +177,6 @@ void insertToList(int blockNum, int numberOfBlocks) {
 		*((int*)block(blockNum)) = head;
 		*(int*)block(prev) = blockNum;
 	}
-	ReleaseMutex(Buddy->mutex);
 }
 
 void addCacheToList(kmem_cache_t * cache)
@@ -225,7 +222,6 @@ void deleteCacheFromList(kmem_cache_t * cache)
 }
 
 void deleteFromList(int blockNum, int numberOfBlocks) {
-	WaitForSingleObject(Buddy->mutex, INFINITE);
 	int head = *((int*)((buddy*)Buddy + 1) + (int)log2(numberOfBlocks));
 	int prev = -1;
 	while (head != blockNum) {
@@ -240,7 +236,6 @@ void deleteFromList(int blockNum, int numberOfBlocks) {
 		*(int*)block(prev) = *(int*)block(head);
 		*((int*)block(head)) = -1;
 	}
-	ReleaseMutex(Buddy->mutex);
 }
 
 int blockToInd(void * addr)
@@ -263,8 +258,6 @@ void buddyDelete() {
 		}
 		Buddy->myMem = NULL;
 		Buddy = NULL;
-		CloseHandle(Buddy->mutex);
-		CloseHandle(Buddy->global);
 	}
 }
 

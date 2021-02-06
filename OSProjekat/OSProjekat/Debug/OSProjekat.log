@@ -1,2 +1,11 @@
-﻿  slabH.c
+﻿  Source.c
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\source.c(27): warning C4018: '<': signed/unsigned mismatch
+  buddy.c
+  cache.c
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\cache.c(15): warning C4013: 'printf' undefined; assuming extern returning int
+  slab.c
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(75): warning C4244: 'function': conversion from 'double' to 'size_t', possible loss of data
+c:\users\urosu\desktop\osprojekat\osprojekat\osprojekat\slab.c(97): warning C4090: 'function': different 'const' qualifiers
+  slabH.c
+  Generating Code...
   OSProjekat.vcxproj -> C:\Users\urosu\Desktop\OSProjekat\OSProjekat\Debug\OSProjekat.exe

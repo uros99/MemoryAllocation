@@ -4,13 +4,17 @@
 #include <assert.h>
 #include "slab.h"
 #include "test.h"
+#include"buddy.h"
+#include<Windows.h>
+#include<stdbool.h>
 
 #define BLOCK_NUMBER (1000)
 #define THREAD_NUM (5)
 #define ITERATIONS (1000)
 
-#define shared_size (7)
+#define shared_size (12)
 
+extern buddy* Buddy;
 
 void construct(void *data) {
 	static int i = 1;
@@ -35,6 +39,7 @@ struct objects_s {
 };
 
 void work(void* pdata) {
+	WaitForSingleObject(Buddy->workHandle, INFINITE);
 	struct data_s data = *(struct data_s*) pdata;
 	char buffer[1024];
 	int size = 0;
@@ -44,6 +49,9 @@ void work(void* pdata) {
 	struct objects_s *objs = (struct objects_s*)(kmalloc(sizeof(struct objects_s) * data.iterations));
 
 	for (int i = 0; i < data.iterations; i++) {
+		if (i == 99 || i==0) {
+			int j = 0;
+		}
 		if (i % 100 == 0) {
 			objs[size].data = kmem_cache_alloc(data.shared);
 			objs[size].cache = data.shared;
@@ -67,6 +75,7 @@ void work(void* pdata) {
 
 	kfree(objs);
 	kmem_cache_destroy(cache);
+	ReleaseMutex(Buddy->workHandle);
 }
 
 int main() {
@@ -75,10 +84,17 @@ int main() {
 	kmem_cache_t *shared = kmem_cache_create("shared object", shared_size, construct, NULL);
 
 	struct data_s data;
+/*	for (int i = 0; i < 10;i++) {
+		data[i].id = i;
+		data[i].shared = shared;
+		data[i].iterations = ITERATIONS;
+	}*/
 	data.shared = shared;
 	data.iterations = ITERATIONS;
 	run_threads(work, &data, THREAD_NUM);
-
+/*	for (int i = 0; i < 10; i++) {
+		work(&data[i]);
+	}*/
 	kmem_cache_destroy(shared);
 	free(space);
 	for (;;);
