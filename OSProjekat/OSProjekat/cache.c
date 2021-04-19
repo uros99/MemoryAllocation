@@ -32,7 +32,6 @@ kmem_cache_t *cache_create(const char *name, size_t size, void(*ctor)(void *), v
 	cache->numberOfBlocksForCashe = numberOfBlocksForCashe;
 	cache->numberOfSlabs = 0;
 	cache->codeOfError = 0;
-	cache->lock = CreateMutex(NULL, false, NULL);
 	cache->shrink = true;
 	cache->slabs[EMPTYSLAB] = NULL;
 	cache->slabs[FULLSLAB] = NULL;

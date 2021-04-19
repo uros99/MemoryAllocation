@@ -11,12 +11,6 @@ typedef struct Buddy {
 	int sizeOfBuddy;
 	kmem_cache_t *headCache;
 	kmem_cache_t *cacheBuffers[NUMBER_OF_BUFFERS];
-	HANDLE listMutex;
-	HANDLE global;
-	HANDLE buddyAllocMutex;
-	HANDLE buddyFreeMutex;
-	HANDLE printMutex;
-	HANDLE workHandle;
 } buddy;
 
 void buddyInit(void* space, int blockNumber);

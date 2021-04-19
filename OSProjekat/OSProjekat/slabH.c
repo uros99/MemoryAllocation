@@ -40,10 +40,12 @@ slab * allocSlab(kmem_cache_t * cache)
 	}
 	insertInList(NOTFULLSLAB, slabTmp);
 	cache->numberOfSlabs++;
+
 	return slabTmp;
 }
 
 void clearSlab(slab* slabTmp) {
+
 	slabTmp->freeSlots = (char*)slabTmp->mem + sizeof(slab);
 	slabTmp->slotsInUse = 0;
 	void *pom = slabTmp->freeSlots;
@@ -58,10 +60,12 @@ void clearSlab(slab* slabTmp) {
 		pom = (char*)pom + slabTmp->cache->sizeOfObject;
 		i++;
 	}
+
 }
 
 void * allocSlot(slab* slabArg)
 {
+
 	int head = *(int*)slabArg->freeSlots;
 	void *addr = slabArg->freeSlots;
 	if (head == -1) {
@@ -74,11 +78,13 @@ void * allocSlot(slab* slabArg)
 		removeFromList(NOTFULLSLAB, slabArg);
 		insertInList(FULLSLAB, slabArg);
 	}
+
 	return addr;
 }
 
 void deleteSlot(slab * slabArg, void * addrObj)
 {
+
 	int head = ((char*)slabArg->freeSlots - ((char*)slabArg->mem + sizeof(slab))) / slabArg->cache->sizeOfObject;
 	slabArg->freeSlots = addrObj;
 	if(slabArg->slotsInUse == slabArg->numberOfObjects -2)
@@ -86,10 +92,12 @@ void deleteSlot(slab * slabArg, void * addrObj)
 	else
 		*(int*)slabArg->freeSlots = head;
 	slabArg->slotsInUse--;
+
 }
 
 void insertInList(int index, slab * slabTmp)
 {
+
 	if (slabTmp->cache->slabs[index] == NULL) {
 		slabTmp->cache->slabs[index] = slabTmp;
 		slabTmp->prevSlab = NULL;
@@ -102,10 +110,12 @@ void insertInList(int index, slab * slabTmp)
 		slabTmp->prevSlab = NULL;
 		pom->prevSlab = slabTmp;
 	}
+
 }
 
 void removeFromList(int index, slab * slabTmp)
 {
+
 	if (slabTmp->cache->slabs[index] == NULL)return;
 	if (slabTmp->cache->slabs[index] == slabTmp) {
 		slabTmp->cache->slabs[index] = slabTmp->nextSlab;
@@ -124,6 +134,7 @@ void removeFromList(int index, slab * slabTmp)
 		slabTmp->nextSlab = NULL;
 		slabTmp->prevSlab = NULL;
 	}
+
 }
 
 void printSlab(slab *slabArg) {

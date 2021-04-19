@@ -10,7 +10,6 @@ typedef struct slab {
 	unsigned int numberOfBlocks;
 	unsigned int slotsInUse;
 	int sizeOfSlabInByte;
-
 	void *mem;
 	void *endAddrOfSlab;
 	void* freeSlots;
